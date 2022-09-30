@@ -11,7 +11,7 @@ const common = Common.fromGethGenesis(shandongJson, { chain: 'shandong' })
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-async function runTx(client: Client, data: string) {
+async function runTx(client: Client, data: string, to?: string, value?: bigint) {
   const nonce = BigInt((await client.request('eth_getTransactionCount', [sender, 'latest'])).result)
   const block = await client.request('eth_getBlockByNumber', ['latest', false])
   const baseFeePerGas = BigInt(block.result.baseFeePerGas)
@@ -21,6 +21,8 @@ async function runTx(client: Client, data: string) {
       gasLimit: 1000000,
       maxFeePerGas: baseFeePerGas * 100n,
       nonce,
+      to,
+      value,
     },
     { common }
   ).sign(pkey)
@@ -68,6 +70,18 @@ tape('Shandong EIP tests', async (t) => {
     }
   }
 
+  // ------------Sanity checks--------------------------------
+  t.test('Simple transfer - sanity check', async (st) => {
+    await runTx(client, '', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
+    const balance = await client.request('eth_getBalance', [
+      '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
+      'latest',
+    ])
+    st.equal(BigInt(balance.result), 1000000n, 'sent a simple ETH transfer')
+    st.end()
+  })
+
+  // ------------EIP 3670 tests-------------------------------
   t.test(' EIP 3670 tests', async (st) => {
     const data = '0x67EF0001010001006060005260086018F3'
     const res = await runTx(client, data)
