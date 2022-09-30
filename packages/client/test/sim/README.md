@@ -12,10 +12,11 @@ This sim test is to setup a single ethereumjs<>lodestar instance to allow execut
 1. `npm install` the `ethereumjs-monorepo`
 2. `cd packages/client`
 3. `docker pull chainsafe/lodestar:latest`
-4. Create a data directory `/data/shandong` (or any other place convinient for you).
+4. Install package `jq` is not installed
+5. Create a data directory `data/shandong` (or any other place convinient for you).
 
 Currently you can just start the local instance by
-`DATADIR=/data/shandong GENESIS_HASH=0x51c7fe41be669f69c45c33a56982cbde405313342d9e2b00d7c91a7b284dd4f8 test/sim/./single-run.sh`
+`DATADIR=/data/shandong test/sim/./single-run.sh`
 
 This has a genesis hash hardcoded (which will be removed in next commit). This command run should start both ethereumjs and lodestar in terminal. Soon you should see lodestar driving ethereumjs in PoS configuration.
 

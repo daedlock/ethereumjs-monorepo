@@ -7,7 +7,7 @@ scriptDir="$currentDir/$scriptDir"
 
 if [ ! -n "$DATADIR" ] || (touch $DATADIR/shaandong.txt) && [ ! -n "$(ls -A $DATADIR)" ]
 then
-  echo "provide a valid DATADIR with configs folder, currently DATADIR=$DATADIR, exiting ... "
+  echo "provide a valid DATADIR, currently DATADIR=$DATADIR, exiting ... "
   exit;
 fi;
 
@@ -39,10 +39,12 @@ cleanup() {
   echo "cleaning up"
   if [ -n "$ejsPid" ] 
   then
-    kill -9 $ejsPid
+    echo "cleaning ethereumjs..."
+    kill $ejsPid
   fi;
   if [ -n "$lodePid" ]
   then
+    echo "cleaning lodestar..."
     docker rm beacon -f
   fi;
 
@@ -54,14 +56,28 @@ ejsCmd="npm run client:start -- --datadir $DATADIR/ethereumjs --gethGenesis $scr
 run_cmd "$ejsCmd"
 ejsPid=$!
 
+ejsId=0
 if [ ! -n "$GENESIS_HASH" ]
 then
   # We should curl and get genesis hash, but for now lets assume it will be provided
-  echo "Currently need the GENESIS_HASH to be provided"
-  cleanup
-  exit
+  while [ ! -n "$GENESIS_HASH" ]
+  do
+    sleep 3
+    echo "Fetching genesis hash from ethereumjs ..."
+    ejsId=$(( ejsId +1 ))
+    responseCmd="curl --location --request POST 'http://localhost:8545' --header 'Content-Type: application/json' --data-raw '{
+      \"jsonrpc\": \"2.0\",
+      \"method\": \"eth_getBlockByNumber\",
+      \"params\": [
+          \"0x0\",
+          true
+      ],
+      \"id\": $ejsId
+    }' 2>/dev/null | jq \".result.hash\""
+    GENESIS_HASH=$(eval "$responseCmd")
+  done;
 fi
-
+echo "genesisHash=${GENESIS_HASH}"
 
 genTime="$(date +%s)"
 genTime=$((genTime + 30))
@@ -71,7 +87,6 @@ echo "genTime=${genTime}"
 lodeCmd="docker run --rm --name beacon --network host chainsafe/lodestar:latest dev --dataDir $DATADIR/lodestar --genesisValidators 8 --startValidators 0..7 --enr.ip 127.0.0.1 --genesisEth1Hash $GENESIS_HASH --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime $genTime"
 run_cmd "$lodeCmd"
 lodePid=$!
-
 
 trap "echo exit signal recived;cleanup" SIGINT SIGTERM
 
