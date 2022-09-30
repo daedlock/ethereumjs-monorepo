@@ -29,3 +29,7 @@ TODOs: (cc: @holgerd77 )
 4. Enable running the sim test in CI [@g11tech]
 5. Modify gensis to activate the EIPs [@jochem-brouwer/@acolytec3]
 6. Add transaction test cases to test the EIP scenarios as follows: [@jochem-brouwer/@acolytec3 ??]
+
+Prefunded dev accounts with keys
+0x97C9B168C5E14d5D369B6D88E9776E5B7b11dcC1 - ae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e
+0x806ce45534bb07a2CAd3a84c53611a2b3DdE316A - 6bf0835d2935042acb92b10331f6c32395b8e049d148d1f8a5567f46f05be573
