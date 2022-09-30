@@ -45,13 +45,13 @@ curl --location --request POST 'http://localhost:8545' --header 'Content-Type: a
           "0x0",
           true
       ],
-      id: 1
+      "id": 1
     }' 2>/dev/null | jq ".result.hash"
 ```
 
 Currently it should give you `0x3feda37f61eaa3d50deaa39cf04e352af0b54c521b0f16d26f826b54edeef756`
 
-4. Get current time stamp: `$(date +%s)` and add 30 to it which gives you current time + 30 seconds for e.g. `1664538222`
+4. Get current time stamp: `$(date +%s)` and add `30` to it which gives you current time + `30` seconds for e.g. `1664538222`
 5. Start lodestar replacing the timestamp that you got from step 3 in `--genesisTime`: `docker run --rm --name beacon --network host chainsafe/lodestar:latest dev --dataDir data/shandong/lodestar --genesisValidators 8 --startValidators 0..7 --enr.ip 127.0.0.1 --genesisEth1Hash 0x3feda37f61eaa3d50deaa39cf04e352af0b54c521b0f16d26f826b54edeef756 --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime 1664538222`
 
 ### EIP(s) testing
@@ -73,7 +73,6 @@ happy Testing the Shanghai!
 
 ### TODOs: (cc: @holgerd77 )
 
-1. Remove GENESIS_HASH specification requirement [@g11tech]
 2. Extract total difficulty from the genesis to pass to lodestar instead of hardcoding [@g11tech]
 3. Enable executing the run from the sim [@g11tech]
 4. Enable running the sim test in CI [@g11tech]
