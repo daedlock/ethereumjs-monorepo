@@ -7,6 +7,8 @@ import type { TypedTransaction } from '@ethereumjs/tx'
 import type { TxReceipt, VM } from '@ethereumjs/vm'
 import type { BlockBuilder } from '@ethereumjs/vm/dist/buildBlock'
 
+import { short } from '../util'
+
 interface PendingBlockOpts {
   /* Config */
   config: Config
@@ -45,6 +47,14 @@ export class PendingBlock {
     // Set the state root to ensure the resulting state
     // is based on the parent block's state
     await vm.eei.setStateRoot(parentBlock.header.stateRoot)
+    await this.txPool['vm'].eei.setStateRoot(parentBlock.header.stateRoot)
+
+    const newStateRoot = await vm.eei.getStateRoot()
+    console.log({
+      parentBlock: parentBlock.header.number,
+      stateRoot: short(parentBlock.header.stateRoot),
+      newStateRoot: short(newStateRoot),
+    })
 
     if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
       throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')

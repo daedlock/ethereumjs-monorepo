@@ -15,6 +15,8 @@ import type {
 } from '@ethereumjs/tx'
 import type { VM } from '@ethereumjs/vm'
 
+import { short } from '../util'
+
 // Configuration constants
 const MIN_GAS_PRICE_BUMP_PERCENT = 10
 const MIN_GAS_PRICE = BigInt(100000000) // .1 GWei
@@ -646,6 +648,8 @@ export class TxPool {
   async txsByPriceAndNonce(vm: VM, baseFee?: bigint) {
     const txs: TypedTransaction[] = []
     // Separate the transactions by account and sort by nonce
+    const stateRoot = await this.vm.eei.getStateRoot()
+    console.log({ stateRoot: short(stateRoot) })
     const byNonce = new Map<string, TypedTransaction[]>()
     for (const [address, poolObjects] of this.pool) {
       let txsSortedByNonce = poolObjects
