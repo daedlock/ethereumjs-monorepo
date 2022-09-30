@@ -11,28 +11,14 @@ const common = Common.fromGethGenesis(shandongJson, { chain: 'shandong' })
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-// Only run this test when the devnet setup is running
-tape('EIP 3540 tx', async (t) => {
-  const client = Client.http({ port: 8545 })
-  let syncing = true
-  while (syncing) {
-    const res = await client.request('eth_syncing', [])
-    if (res.result === false) {
-      syncing = false
-    } else {
-      await sleep(12000)
-    }
-  }
-
-  const nonce = await client.request('eth_getTransactionCount', [sender, 'latest'])
-
-  const data = '0x6B' + 'EF0001' + '01000102000100' + '00' + 'AA' + '600052600C6014F3'
+async function runTx(client: Client, data: string) {
+  const nonce = BigInt((await client.request('eth_getTransactionCount', [sender, 'latest'])).result)
   const tx = FeeMarketEIP1559Transaction.fromTxData(
     {
       data,
       gasLimit: 1000000,
-      maxFeePerGas: 7656250000,
-      nonce: BigInt(nonce.result),
+      maxFeePerGas: 765625000,
+      nonce,
     },
     { common }
   ).sign(pkey)
@@ -53,8 +39,39 @@ tape('EIP 3540 tx', async (t) => {
       await sleep(12000)
     }
   }
+  return receipt.result
+}
 
-  const code = await client.request('eth_getCode', [receipt.result.contractAddress, 'latest'])
+tape('Shandong EIP tests', async (t) => {
+  const client = Client.http({ port: 8545 })
+
+  try {
+    const res = await client.request('web3_clientVersion', [])
+    if ((res.result as string).includes('EthereumJS')) {
+      t.pass('connected to client')
+    } else {
+      t.fail('connected to wrong client')
+    }
+  } catch (err) {
+    throw new Error('Network is not running')
+  }
+
+  let syncing = true
+  while (syncing) {
+    const res = await client.request('eth_syncing', [])
+    if (res.result === false) {
+      syncing = false
+    } else {
+      await sleep(12000)
+    }
+  }
+
+  // ------------EIP 3540 tests-------------------------------
+  const data = '0x6B' + 'EF0001' + '01000102000100' + '00' + 'AA' + '600052600C6014F3'
+
+  const res = await runTx(client, data)
+
+  const code = await client.request('eth_getCode', [res.contractAddress, 'latest'])
 
   t.equal(code.result, '0XEF00010100010200010000AA'.toLowerCase(), 'deposited valid EOF1 code')
   t.end()
