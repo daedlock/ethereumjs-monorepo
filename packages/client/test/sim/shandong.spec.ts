@@ -13,6 +13,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 async function runTx(client: Client, data: string, to?: string, value?: bigint) {
   const nonce = BigInt((await client.request('eth_getTransactionCount', [sender, 'latest'])).result)
+
   const block = await client.request('eth_getBlockByNumber', ['latest', false])
   const baseFeePerGas = BigInt(block.result.baseFeePerGas)
   const tx = FeeMarketEIP1559Transaction.fromTxData(
@@ -32,7 +33,6 @@ async function runTx(client: Client, data: string, to?: string, value?: bigint) 
     ['0x' + tx.serialize().toString('hex')],
     2.0
   )
-
   let mined = false
   let receipt
   while (!mined) {
@@ -105,6 +105,26 @@ tape('Shandong EIP tests', async (t) => {
     const code = await client.request('eth_getCode', [res.contractAddress, 'latest'])
 
     st.equal(code.result, '0XEF00010100010200010000AA'.toLowerCase(), 'deposited valid EOF1 code')
+    st.end()
+  })
+  // ------------EIP 3860 tests-------------------------------
+  t.test('EIP 3860 tests', async (st) => {
+    const data =
+      '0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F'
+    const res = await runTx(client, data)
+    const code = await client.request('eth_getCode', [res.contractAddress, 'latest'])
+
+    st.equal(code.result, '0x', 'no code deposited with invalid init code')
+    st.end()
+  })
+  // ------------EIP 3855 tests-------------------------------
+  t.test('EIP 3860 tests', async (st) => {
+    const data = '0x5F5F5F'
+    const _res = await runTx(client, data)
+    st.end()
+  })
+  // ------------EIP 3651 tests-------------------------------
+  t.test('EIP 3651 tests', async (st) => {
     st.end()
   })
   t.end()
