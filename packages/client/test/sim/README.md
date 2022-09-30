@@ -22,6 +22,13 @@ Currently you can just start the local instance by
 
 This command run should start both ethereumjs and lodestar in terminal. Soon you should see lodestar driving ethereumjs in PoS configuration.
 
+##### Process cleanup
+
+The script should auto clean the processes. In case it fails to do so:
+
+1. Remove lodestar by `docker rm -f beacon`
+2. Find the ethereumjs process by doing `ps -a | grep client` and do `kill <process id>`
+
 #### Manual run using script
 
 1. Clean DATADIR (`data/shandong`) in start of each run and do `mkdir data/shandong/ethereumjs && mkdir data/shandong/lodestar`
