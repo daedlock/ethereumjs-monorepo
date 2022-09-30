@@ -14,7 +14,7 @@ tape('EIP 3540 tx', async (t) => {
     {
       data,
       gasLimit: 1000000,
-      maxFeePerGas: 7,
+      maxFeePerGas: 7656250000,
       nonce: 0n,
     },
     { common }
