@@ -12,7 +12,7 @@ This sim test is to setup a single ethereumjs<>lodestar instance to allow execut
 1. `npm install` the `ethereumjs-monorepo`
 2. `cd packages/client`
 3. `docker pull chainsafe/lodestar:latest`
-4. Install package `jq` is not installed
+4. Install linux package `jq` is not installed
 5. Create a data directory `data/shandong` (or any other place convinient for you).
 
 #### Auto run using script
