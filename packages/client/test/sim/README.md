@@ -17,6 +17,8 @@ This sim test is to setup a single ethereumjs<>lodestar instance to allow execut
 
 #### Auto run using script
 
+(Might only run good on ubuntu/linux)
+
 Currently you can just start the local instance by
 `DATADIR=data/shandong test/sim/./single-run.sh`
 
