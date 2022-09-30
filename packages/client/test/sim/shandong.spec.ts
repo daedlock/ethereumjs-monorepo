@@ -13,11 +13,13 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 async function runTx(client: Client, data: string) {
   const nonce = BigInt((await client.request('eth_getTransactionCount', [sender, 'latest'])).result)
+  const block = await client.request('eth_getBlockByNumber', ['latest', false])
+  const baseFeePerGas = BigInt(block.result.baseFeePerGas)
   const tx = FeeMarketEIP1559Transaction.fromTxData(
     {
       data,
       gasLimit: 1000000,
-      maxFeePerGas: 765625000,
+      maxFeePerGas: baseFeePerGas * 100n,
       nonce,
     },
     { common }
@@ -66,13 +68,24 @@ tape('Shandong EIP tests', async (t) => {
     }
   }
 
+  t.test(' EIP 3670 tests', async (st) => {
+    const data = '0x67EF0001010001006060005260086018F3'
+    const res = await runTx(client, data)
+    st.ok(res.contractAddress !== undefined, 'created contract')
+    const code = await client.request('eth_getCode', [res.contractAddress, 'latest'])
+    st.equal(code.result, '0x', 'no code was deposited for invalid EOF code')
+    st.end()
+  })
   // ------------EIP 3540 tests-------------------------------
-  const data = '0x6B' + 'EF0001' + '01000102000100' + '00' + 'AA' + '600052600C6014F3'
+  t.test('EIP 3540 tests', async (st) => {
+    const data = '0x6B' + 'EF0001' + '01000102000100' + '00' + 'AA' + '600052600C6014F3'
 
-  const res = await runTx(client, data)
+    const res = await runTx(client, data)
 
-  const code = await client.request('eth_getCode', [res.contractAddress, 'latest'])
+    const code = await client.request('eth_getCode', [res.contractAddress, 'latest'])
 
-  t.equal(code.result, '0XEF00010100010200010000AA'.toLowerCase(), 'deposited valid EOF1 code')
+    st.equal(code.result, '0XEF00010100010200010000AA'.toLowerCase(), 'deposited valid EOF1 code')
+    st.end()
+  })
   t.end()
 })
