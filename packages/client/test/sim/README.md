@@ -34,3 +34,12 @@ TODOs: (cc: @holgerd77 )
 Prefunded dev accounts with keys
 0x97C9B168C5E14d5D369B6D88E9776E5B7b11dcC1 - ae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e
 0x806ce45534bb07a2CAd3a84c53611a2b3DdE316A - 6bf0835d2935042acb92b10331f6c32395b8e049d148d1f8a5567f46f05be573
+
+### EIP(s) testing
+
+You may run some transaction scenarios from handcrafted `test/sim/shandong.spec.ts` for testing the `Shanghai` EIPS.
+
+`npm run tape -- test/sim/shandong.spec.ts`
+
+Or modify them and play away!
+happy Testing the Shanghai!
