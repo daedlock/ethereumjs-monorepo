@@ -70,11 +70,3 @@ You may run some transaction scenarios from handcrafted `test/sim/shandong.spec.
 `npm run tape -- test/sim/shandong.spec.ts`
 
 happy Testing the Shanghai!
-
-### TODOs: (cc: @holgerd77 )
-
-2. Extract total difficulty from the genesis to pass to lodestar instead of hardcoding [@g11tech]
-3. Enable executing the run from the sim [@g11tech]
-4. Enable running the sim test in CI [@g11tech]
-5. Modify gensis to activate the EIPs [@jochem-brouwer/@acolytec3]
-6. Add transaction test cases to test the EIP scenarios as follows: [@jochem-brouwer/@acolytec3 ??]
