@@ -34,9 +34,8 @@ The script should auto clean the processes. In case it fails to do so:
 #### Manual run using script
 
 1. Clean DATADIR (`data/shandong`) in start of each run and do `mkdir data/shandong/ethereumjs && mkdir data/shandong/lodestar`
-
-1. Start ethereumjs: `npm run client:start -- --datadir data/shandong/ethereumjs --gethGenesis test/sim/configs/geth-genesis.json --rpc --rpcEngine --rpcEngineAuth false`
-1. Get genesis hash from `ethereumjs` client:
+2. Start ethereumjs: `npm run client:start -- --datadir data/shandong/ethereumjs --gethGenesis test/sim/configs/geth-genesis.json --rpc --rpcEngine --rpcEngineAuth false`
+3. Get genesis hash from `ethereumjs` client:
 
 ```
 curl --location --request POST 'http://localhost:8545' --header 'Content-Type: application/json' --data-raw '{
@@ -50,7 +49,10 @@ curl --location --request POST 'http://localhost:8545' --header 'Content-Type: a
     }' 2>/dev/null | jq ".result.hash"
 ```
 
-Currently it should give you `0x3feda37f61eaa3d50deaa39cf04e352af0b54c521b0f16d26f826b54edeef756` 3. Get current time stamp: `$(date +%s)` and add 30 to it which gives you current time + 30 seconds for e.g. `1664538222` 4. Start lodestar replacing the timestamp that you got from step 3 in `--genesisTime`: `docker run --rm --name beacon --network host chainsafe/lodestar:latest dev --dataDir data/shandong/lodestar --genesisValidators 8 --startValidators 0..7 --enr.ip 127.0.0.1 --genesisEth1Hash 0x3feda37f61eaa3d50deaa39cf04e352af0b54c521b0f16d26f826b54edeef756 --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime 1664538222`
+Currently it should give you `0x3feda37f61eaa3d50deaa39cf04e352af0b54c521b0f16d26f826b54edeef756`
+
+4. Get current time stamp: `$(date +%s)` and add 30 to it which gives you current time + 30 seconds for e.g. `1664538222`
+5. Start lodestar replacing the timestamp that you got from step 3 in `--genesisTime`: `docker run --rm --name beacon --network host chainsafe/lodestar:latest dev --dataDir data/shandong/lodestar --genesisValidators 8 --startValidators 0..7 --enr.ip 127.0.0.1 --genesisEth1Hash 0x3feda37f61eaa3d50deaa39cf04e352af0b54c521b0f16d26f826b54edeef756 --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime 1664538222`
 
 ### EIP(s) testing
 
