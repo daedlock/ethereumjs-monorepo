@@ -73,11 +73,17 @@ tape('Shandong EIP tests', async (t) => {
   // ------------Sanity checks--------------------------------
   t.test('Simple transfer - sanity check', async (st) => {
     await runTx(client, '', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
-    const balance = await client.request('eth_getBalance', [
+    let balance = await client.request('eth_getBalance', [
       '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
       'latest',
     ])
     st.equal(BigInt(balance.result), 1000000n, 'sent a simple ETH transfer')
+    await runTx(client, '', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
+    balance = await client.request('eth_getBalance', [
+      '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
+      'latest',
+    ])
+    st.equal(BigInt(balance.result), 2000000n, 'sent a simple ETH transfer 2x')
     st.end()
   })
 
