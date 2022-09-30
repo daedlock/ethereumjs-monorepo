@@ -74,6 +74,7 @@ then
       ],
       \"id\": $ejsId
     }' 2>/dev/null | jq \".result.hash\""
+    echo "$responseCmd"
     GENESIS_HASH=$(eval "$responseCmd")
   done;
 fi
