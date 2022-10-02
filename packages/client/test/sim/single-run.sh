@@ -5,7 +5,13 @@ currentDir=$(pwd)
 scriptDir=$(dirname $0)
 scriptDir="$currentDir/$scriptDir"
 
-if [ ! -n "$DATADIR" ] || (touch $DATADIR/shaandong.txt) && [ ! -n "$(ls -A $DATADIR)" ]
+if [ ! -n "$DATADIR" ]
+then
+  DATADIR="$scriptDir/data"
+  mkdir $DATADIR
+fi;
+
+if [ ! -n "$DATADIR" ] || (touch $DATADIR/shandong.txt) && [ ! -n "$(ls -A $DATADIR)" ]
 then
   echo "provide a valid DATADIR, currently DATADIR=$DATADIR, exiting ... "
   exit;
