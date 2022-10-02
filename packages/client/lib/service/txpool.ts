@@ -2,6 +2,8 @@ import { Capability } from '@ethereumjs/tx'
 import { Address, bufferToHex } from '@ethereumjs/util'
 import Heap = require('qheap')
 
+import { short } from '../util'
+
 import type { Config } from '../config'
 import type { Peer } from '../net/peer'
 import type { PeerPool } from '../net/peerpool'
@@ -14,8 +16,6 @@ import type {
   TypedTransaction,
 } from '@ethereumjs/tx'
 import type { VM } from '@ethereumjs/vm'
-
-import { short } from '../util'
 
 // Configuration constants
 const MIN_GAS_PRICE_BUMP_PERCENT = 10

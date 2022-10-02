@@ -39,12 +39,14 @@ cleanup() {
   echo "cleaning up"
   if [ -n "$ejsPid" ] 
   then
-    echo "cleaning ethereumjs..."
-    kill $ejsPid
+    echo "cleaning ethereumjs pid:${ejsPid}..."
+    pidBySearch=$(ps | grep "$DATADIR/ethereumjs" | grep -v grep | awk '{print $1}')
+    echo "pidBySearch: $pidBySearch"
+    kill $pidBySearch
   fi;
   if [ -n "$lodePid" ]
   then
-    echo "cleaning lodestar..."
+    echo "cleaning lodestar pid:${lodePid}..."
     docker rm beacon -f
   fi;
 
@@ -55,6 +57,7 @@ cleanup() {
 ejsCmd="npm run client:start -- --datadir $DATADIR/ethereumjs --gethGenesis $scriptDir/configs/geth-genesis.json --rpc --rpcEngine --rpcEngineAuth false"
 run_cmd "$ejsCmd"
 ejsPid=$!
+echo "ejsPid: $ejsPid"
 
 ejsId=0
 if [ ! -n "$GENESIS_HASH" ]
@@ -74,20 +77,21 @@ then
       ],
       \"id\": $ejsId
     }' 2>/dev/null | jq \".result.hash\""
-    echo "$responseCmd"
+    # echo "$responseCmd"
     GENESIS_HASH=$(eval "$responseCmd")
   done;
 fi
 echo "genesisHash=${GENESIS_HASH}"
 
 genTime="$(date +%s)"
-genTime=$((genTime + 30))
+genTime=$((genTime + 15))
 echo "genTime=${genTime}"
 
 
 lodeCmd="docker run --rm --name beacon --network host chainsafe/lodestar:latest dev --dataDir $DATADIR/lodestar --genesisValidators 8 --startValidators 0..7 --enr.ip 127.0.0.1 --genesisEth1Hash $GENESIS_HASH --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime $genTime"
 run_cmd "$lodeCmd"
 lodePid=$!
+echo "lodePid: $lodePid"
 
 trap "echo exit signal recived;cleanup" SIGINT SIGTERM
 
