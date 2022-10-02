@@ -1,5 +1,7 @@
 ### Shandong sim setup
 
+- https://github.com/ethereumjs/ethereumjs-monorepo/issues/2298
+
 This sim test is to setup a single ethereumjs<>lodestar instance to allow executing testvectors for the EIPs targetting Shanghai hardfork.
 
 ### EIP(s) testing
@@ -75,12 +77,11 @@ Currently it should give you `0x3feda37f61eaa3d50deaa39cf04e352af0b54c521b0f16d2
 4. Get current time stamp: `date +%s` and add `30` to it which gives you current time + `30` seconds for e.g. `1664538222`
 5. Start lodestar replacing the timestamp that you got from step 3 in `--genesisTime`: `docker run --rm --name beacon --network host chainsafe/lodestar:latest dev --dataDir data/shandong/lodestar --genesisValidators 8 --startValidators 0..7 --enr.ip 127.0.0.1 --genesisEth1Hash 0x3feda37f61eaa3d50deaa39cf04e352af0b54c521b0f16d26f826b54edeef756 --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime 1664538222`
 
-##### Process cleanup
+Test the sim tests using the set network as:
 
-The script should auto clean the processes. In case it fails to do so:
-
-1. Remove lodestar by `docker rm -f beacon`
-2. Find the ethereumjs process by doing `ps -a | grep client` and do `kill <process id>`
+```
+EXTERNAL_RUN=true npm run tape -- test/sim/shandong.spec.ts
+```
 
 ### Custom Transaction testing/development
 
@@ -88,3 +89,10 @@ You may want to do your own custom transaction development/testing to target the
 Ethereumjs rpc endpoint should now be available at `http://127.0.0.1:8545` for you to play with!
 
 happy Testing the Shanghai!
+
+### Process cleanup
+
+The script should auto clean the processes. In case it fails to do so:
+
+1. Remove lodestar by `docker rm -f beacon`
+2. Find the ethereumjs process by doing `ps -a | grep client` and do `kill <process id>`
