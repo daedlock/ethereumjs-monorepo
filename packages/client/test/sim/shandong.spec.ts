@@ -99,8 +99,12 @@ tape('Shandong EIP tests', async (t) => {
   })
   // ------------EIP 3855 tests-------------------------------
   t.test('EIP 3860 tests', async (st) => {
-    const data = '0x5F5F5F'
-    const _res = await runTx(data)
+    const push1res = await runTx('0x6000')
+    const push0res = await runTx('0x5F')
+    st.ok(
+      BigInt(push1res.gasUsed) > BigInt(push0res.gasUsed),
+      'PUSH1 transaction costs higher gas than PUSH0'
+    )
     st.end()
   })
   // ------------EIP 3651 tests-------------------------------
