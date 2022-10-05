@@ -649,7 +649,6 @@ export class TxPool {
     const txs: TypedTransaction[] = []
     // Separate the transactions by account and sort by nonce
     const stateRoot = await this.vm.eei.getStateRoot()
-    console.log({ stateRoot: short(stateRoot) })
     const byNonce = new Map<string, TypedTransaction[]>()
     for (const [address, poolObjects] of this.pool) {
       let txsSortedByNonce = poolObjects

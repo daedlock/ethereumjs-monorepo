@@ -50,12 +50,6 @@ export class PendingBlock {
     await this.txPool['vm'].eei.setStateRoot(parentBlock.header.stateRoot)
 
     const newStateRoot = await vm.eei.getStateRoot()
-    console.log({
-      parentBlock: parentBlock.header.number,
-      stateRoot: short(parentBlock.header.stateRoot),
-      newStateRoot: short(newStateRoot),
-    })
-
     if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
       throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
     }
