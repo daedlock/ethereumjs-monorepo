@@ -11,6 +11,13 @@ then
   mkdir $DATADIR
 fi;
 
+# just use default network as shandong, can be omitted later as more custom networks get added
+if [ ! -n "$NETWORK" ]
+then
+  echo "network not provide via NETWORK env variable, default to shandong..."
+  NETWORK="shandong";
+fi;
+
 if [ ! -n "$DATADIR" ] || (touch $DATADIR/shandong.txt) && [ ! -n "$(ls -A $DATADIR)" ]
 then
   echo "provide a valid DATADIR, currently DATADIR=$DATADIR, exiting ... "
@@ -60,7 +67,7 @@ cleanup() {
   lodePid=""
 }
 
-ejsCmd="npm run client:start -- --datadir $DATADIR/ethereumjs --gethGenesis $scriptDir/configs/geth-genesis.json --rpc --rpcEngine --rpcEngineAuth false"
+ejsCmd="npm run client:start -- --datadir $DATADIR/ethereumjs --gethGenesis $scriptDir/configs/$NETWORK-genesis.json --rpc --rpcEngine --rpcEngineAuth false"
 run_cmd "$ejsCmd"
 ejsPid=$!
 echo "ejsPid: $ejsPid"
@@ -116,5 +123,3 @@ then
 fi;
 
 echo "Script run finished, exiting ..."
-
-

@@ -93,6 +93,7 @@ function parseGethParams(json: any) {
     [Hardfork.Berlin]: 'berlinBlock',
     [Hardfork.London]: 'londonBlock',
     [Hardfork.MergeForkIdTransition]: 'mergeForkBlock',
+    [Hardfork.Shandong]: 'shandongBlock',
     [Hardfork.Shanghai]: 'shanghaiBlock',
   }
   params.hardforks = Object.values(Hardfork)

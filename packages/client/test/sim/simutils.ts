@@ -63,11 +63,15 @@ type RunOpts = {
 }
 
 export function runNetwork(
+  network: string,
   client: Client,
   { filterKeywords, filterOutWords }: RunOpts
 ): () => Promise<void> {
   const runProc = spawn('test/sim/single-run.sh', [], {
-    env: process.env,
+    env: {
+      ...process.env,
+      NETWORK: network,
+    },
   })
   console.log({ pid: runProc.pid })
   let lastPrintedDot = false
@@ -116,12 +120,13 @@ export function runNetwork(
 }
 
 export async function startNetwork(
+  network: string,
   client: Client,
   opts: RunOpts
 ): Promise<{ teardownCallBack: () => Promise<void>; result: string }> {
   let teardownCallBack
   if (opts.externalRun === undefined) {
-    teardownCallBack = runNetwork(client, opts)
+    teardownCallBack = runNetwork(network, client, opts)
   } else {
     teardownCallBack = async (): Promise<void> => {}
   }

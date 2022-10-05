@@ -7,9 +7,11 @@ import { runTxHelper, sleep, startNetwork } from './simutils'
 
 const pkey = Buffer.from('ae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e', 'hex')
 const sender = '0x' + privateToAddress(pkey).toString('hex')
-const shandongJson = require('./configs/geth-genesis.json')
-const common = Common.fromGethGenesis(shandongJson, { chain: 'shandong' })
 const client = Client.http({ port: 8545 })
+
+const network = 'shandong'
+const shandongJson = require(`./configs/${network}-genesis.json`)
+const common = Common.fromGethGenesis(shandongJson, { chain: network })
 
 export async function runTx(data: string, to?: string, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
@@ -19,7 +21,7 @@ const filterKeywords = ['warn', 'error', 'npm run client:start', 'docker run']
 const filterOutWords = ['duties', 'Low peer count', 'MaxListenersExceededWarning']
 
 tape('Shandong EIP tests', async (t) => {
-  const { teardownCallBack, result } = await startNetwork(client, {
+  const { teardownCallBack, result } = await startNetwork(network, client, {
     filterKeywords,
     filterOutWords,
     externalRun: process.env.EXTERNAL_RUN,
@@ -32,6 +34,7 @@ tape('Shandong EIP tests', async (t) => {
     t.fail('connected to wrong client')
   }
 
+  console.log(`Waiting for network to start...`)
   let syncing = true
   let tries = 0
   while (syncing && tries < 5) {
@@ -47,7 +50,7 @@ tape('Shandong EIP tests', async (t) => {
   if (syncing) {
     t.fail('ethereumjs<>lodestar failed to start')
   } else {
-    t.pass('ethereumjs<>lodestar synced')
+    t.pass('ethereumjs<>lodestar started successfully')
   }
   // ------------Sanity checks--------------------------------
   t.test('Simple transfer - sanity check', async (st) => {
