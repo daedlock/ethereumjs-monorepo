@@ -94,7 +94,7 @@ genTime=$((genTime + 15))
 echo "genTime=${genTime}"
 
 
-lodeCmd="docker run --rm --name beacon --network host chainsafe/lodestar:latest dev --dataDir $DATADIR/lodestar --genesisValidators 8 --startValidators 0..7 --enr.ip 127.0.0.1 --genesisEth1Hash $GENESIS_HASH --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime $genTime"
+lodeCmd="docker run --rm --name beacon -v $DATADIR:/data --network host chainsafe/lodestar:latest dev --dataDir /data/lodestar --genesisValidators 8 --startValidators 0..7 --enr.ip 127.0.0.1 --genesisEth1Hash $GENESIS_HASH --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime $genTime"
 run_cmd "$lodeCmd"
 lodePid=$!
 echo "lodePid: $lodePid"
