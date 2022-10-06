@@ -18,12 +18,13 @@ Prefunded dev accounts with keys
 
 - Docker since lodestar docker image is used to run CL to drive the post-merge sim run
 - Docker should run without `sudo`, else prefix `sudo` in from of docker commands in `test/sim/single-run.sh`
+- Mac users should skip `docker` and install directly install and use lodestar binary as instructed below
 
 ### How to run
 
 1. `npm install` the `ethereumjs-monorepo`
 2. `cd packages/client`
-3. `docker pull chainsafe/lodestar:latest`
+3. `docker pull chainsafe/lodestar:latest`, for MAC users: `npm install -g @chainsafe/lodestar:latest`
 4. Install linux package `jq` is not installed
 5. Create a data directory `data/shandong` (or any other place convinient for you).
 
@@ -37,14 +38,21 @@ Just run:
 DATADIR=/data/shandong npm run tape -- test/sim/shandong.spec.ts
 ```
 
+for MAC add extra env variable `LODE_BINARY="lodestar"` (or `LODE_BINARY="npx lodestar"` if you didn't install lodestar globally) , i.e.
+
+```
+DATADIR=/data/shandong LODE_BINARY="lodestar" npm run tape -- test/sim/shandong.spec.ts
+```
+
 It will auto run the script to run custom network, run tests and in end tear it down. You can modify `test/sim/shandong.spec.ts` transaction scenarios to test your custom functionality.
 
 #### Semi-Auto run using script to start custom network
 
-(Might only run good on ubuntu/linux)
-
 Currently you can just start the local instance by
 `DATADIR=data/shandong test/sim/./single-run.sh`
+
+MAC users:
+`DATADIR=data/shandong LODE_BINARY="lodestar" test/sim/./single-run.sh`
 
 This command run should start both ethereumjs and lodestar in terminal. Soon you should see lodestar driving ethereumjs in PoS configuration.
 
@@ -76,6 +84,7 @@ Currently it should give you `0x3feda37f61eaa3d50deaa39cf04e352af0b54c521b0f16d2
 
 4. Get current time stamp: `date +%s` and add `30` to it which gives you current time + `30` seconds for e.g. `1664538222`
 5. Start lodestar replacing the timestamp that you got from step 3 in `--genesisTime`: `docker run --rm --name beacon --network host chainsafe/lodestar:latest dev --dataDir data/shandong/lodestar --genesisValidators 8 --startValidators 0..7 --enr.ip 127.0.0.1 --genesisEth1Hash 0x3feda37f61eaa3d50deaa39cf04e352af0b54c521b0f16d26f826b54edeef756 --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime 1664538222`
+   For MAC users: `lodestar dev --dataDir data/shandong/lodestar --genesisValidators 8 --startValidators 0..7 --enr.ip 127.0.0.1 --genesisEth1Hash $GENESIS_HASH --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime 1664538222`
 
 Test the sim tests using the set network as:
 

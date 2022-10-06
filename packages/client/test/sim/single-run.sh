@@ -60,7 +60,14 @@ cleanup() {
   if [ -n "$lodePid" ]
   then
     echo "cleaning lodestar pid:${lodePid}..."
-    docker rm beacon -f
+    if [ ! -n "$LODE_BINARY" ]
+    then
+      docker rm beacon -f
+    else
+      pidBySearch=$(ps | grep "$DATADIR/lodestar" | grep -v grep | awk '{print $1}')
+      echo "pidBySearch: $pidBySearch"
+      kill $pidBySearch
+    fi;
   fi;
 
   ejsPid=""
@@ -100,8 +107,12 @@ genTime="$(date +%s)"
 genTime=$((genTime + 15))
 echo "genTime=${genTime}"
 
-
-lodeCmd="docker run --rm --name beacon -v $DATADIR:/data --network host chainsafe/lodestar:latest dev --dataDir /data/lodestar --genesisValidators 8 --startValidators 0..7 --enr.ip 127.0.0.1 --genesisEth1Hash $GENESIS_HASH --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime $genTime"
+if [ ! -n "$LODE_BINARY" ]
+then
+  lodeCmd="docker run --rm --name beacon -v $DATADIR:/data --network host chainsafe/lodestar:latest dev --dataDir /data/lodestar --genesisValidators 8 --startValidators 0..7 --enr.ip 127.0.0.1 --genesisEth1Hash $GENESIS_HASH --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime $genTime"
+else
+  lodeCmd="$LODE_BINARY dev --dataDir $DATADIR/lodestar --genesisValidators 8 --startValidators 0..7 --enr.ip 127.0.0.1 --genesisEth1Hash $GENESIS_HASH --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime $genTime"
+fi;
 run_cmd "$lodeCmd"
 lodePid=$!
 echo "lodePid: $lodePid"
