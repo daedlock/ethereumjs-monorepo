@@ -158,7 +158,12 @@ tape('Shandong EIP tests', async (t) => {
   })
 
   t.test('should reset td', async (st) => {
-    await teardownCallBack()
+    try {
+      await teardownCallBack()
+      st.pass('network cleaned')
+    } catch (e) {
+      st.fail('network not cleaned properly')
+    }
     st.end()
   })
 

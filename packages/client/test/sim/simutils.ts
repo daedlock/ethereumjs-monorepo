@@ -45,7 +45,7 @@ async function isPortInUse(port: number): Promise<boolean> {
 export async function waitForELOffline(): Promise<void> {
   const port = 30303
 
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 15; i++) {
     console.log('Waiting for EL offline...')
     const isInUse = await isPortInUse(port)
     if (!isInUse) {

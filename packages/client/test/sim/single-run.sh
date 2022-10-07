@@ -52,11 +52,13 @@ cleanup() {
   echo "cleaning up"
   if [ -n "$ejsPid" ] 
   then
+    ejsPidBySearch=$(ps x | grep "ts-node bin/cli.ts --datadir $DATADIR/ethereumjs" | grep -v grep | awk '{print $1}')
     echo "cleaning ethereumjs pid:${ejsPid} ejsPidBySearch:${ejsPidBySearch}..."
     kill $ejsPidBySearch
   fi;
   if [ -n "$lodePid" ]
   then
+    lodePidBySearch=$(ps x | grep "$DATADIR/lodestar" | grep -v grep | awk '{print $1}')
     echo "cleaning lodestar pid:${lodePid} lodePidBySearch:${lodePidBySearch}..."
     if [ ! -n "$LODE_BINARY" ]
     then
@@ -74,8 +76,6 @@ ejsCmd="npm run client:start -- --datadir $DATADIR/ethereumjs --gethGenesis $scr
 run_cmd "$ejsCmd"
 ejsPid=$!
 echo "ejsPid: $ejsPid"
-ejsPidBySearch=$(ps -ax | grep "$DATADIR/ethereumjs" | grep -v grep | awk '{print $1}')
-echo "ejsPidBySearch: $ejsPidBySearch"
 
 ejsId=0
 if [ ! -n "$GENESIS_HASH" ]
@@ -114,8 +114,6 @@ fi;
 run_cmd "$lodeCmd"
 lodePid=$!
 echo "lodePid: $lodePid"
-lodePidBySearch=$(ps -ax | grep "$DATADIR/lodestar" | grep -v grep | awk '{print $1}')
-echo "lodePidBySearch: $lodePidBySearch"
 
 trap "echo exit signal recived;cleanup" SIGINT SIGTERM
 
