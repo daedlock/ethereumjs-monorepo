@@ -17,7 +17,9 @@ export async function runTx(data: string, to?: string, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
 }
 
-const filterKeywords = ['warn', 'error', 'npm run client:start', 'docker run']
+// To minimise noise on the spec run, selective filteration is applied to let the important events
+// of the testnet log to show up in the spec log
+const filterKeywords = ['warn', 'error', 'npm run client:start', 'docker run', 'lodestar dev']
 const filterOutWords = ['duties', 'Low peer count', 'MaxListenersExceededWarning']
 
 tape('Shandong EIP tests', async (t) => {
