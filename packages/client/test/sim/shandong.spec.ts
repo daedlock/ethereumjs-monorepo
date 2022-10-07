@@ -39,7 +39,6 @@ tape('Shandong EIP tests', async (t) => {
     externalRun: process.env.EXTERNAL_RUN,
   })
 
-  tape.onFinish(teardownCallBack)
   if (result.includes('EthereumJS')) {
     t.pass('connected to client')
   } else {
@@ -157,5 +156,11 @@ tape('Shandong EIP tests', async (t) => {
     )
     st.end()
   })
+
+  t.test('should reset td', async (st) => {
+    await teardownCallBack()
+    st.end()
+  })
+
   t.end()
 })
