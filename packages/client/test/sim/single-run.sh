@@ -74,7 +74,7 @@ ejsCmd="npm run client:start -- --datadir $DATADIR/ethereumjs --gethGenesis $scr
 run_cmd "$ejsCmd"
 ejsPid=$!
 echo "ejsPid: $ejsPid"
-ejsPidBySearch=$(ps | grep "$DATADIR/ethereumjs" | grep -v grep | awk '{print $1}')
+ejsPidBySearch=$(ps -ax | grep "$DATADIR/ethereumjs" | grep -v grep | awk '{print $1}')
 echo "ejsPidBySearch: $ejsPidBySearch"
 
 ejsId=0
@@ -114,7 +114,7 @@ fi;
 run_cmd "$lodeCmd"
 lodePid=$!
 echo "lodePid: $lodePid"
-lodePidBySearch=$(ps | grep "$DATADIR/lodestar" | grep -v grep | awk '{print $1}')
+lodePidBySearch=$(ps -ax | grep "$DATADIR/lodestar" | grep -v grep | awk '{print $1}')
 echo "lodePidBySearch: $lodePidBySearch"
 
 trap "echo exit signal recived;cleanup" SIGINT SIGTERM
