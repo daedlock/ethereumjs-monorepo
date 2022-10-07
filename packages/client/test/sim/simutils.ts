@@ -111,7 +111,7 @@ export function runNetwork(
       throw Error('network is killed before end of test')
     }
     console.log('Killing network process', runProc.pid)
-    execSync(`pkill -15 -P ${runProc.pid}`)
+    execSync(`kill -15 ${runProc.pid}`)
     // Wait for the P2P to be offline
     await waitForELOffline()
     console.log('network successfully killed!')
