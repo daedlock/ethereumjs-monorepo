@@ -52,21 +52,17 @@ cleanup() {
   echo "cleaning up"
   if [ -n "$ejsPid" ] 
   then
-    echo "cleaning ethereumjs pid:${ejsPid}..."
-    pidBySearch=$(ps | grep "$DATADIR/ethereumjs" | grep -v grep | awk '{print $1}')
-    echo "pidBySearch: $pidBySearch"
-    kill $pidBySearch
+    echo "cleaning ethereumjs pid:${ejsPid} ejsPidBySearch:${ejsPidBySearch}..."
+    kill $ejsPidBySearch
   fi;
   if [ -n "$lodePid" ]
   then
-    echo "cleaning lodestar pid:${lodePid}..."
+    echo "cleaning lodestar pid:${lodePid} lodePidBySearch:${lodePidBySearch}..."
     if [ ! -n "$LODE_BINARY" ]
     then
       docker rm beacon -f
     else
-      pidBySearch=$(ps | grep "$DATADIR/lodestar" | grep -v grep | awk '{print $1}')
-      echo "pidBySearch: $pidBySearch"
-      kill $pidBySearch
+      kill $lodePidBySearch
     fi;
   fi;
 
@@ -78,6 +74,8 @@ ejsCmd="npm run client:start -- --datadir $DATADIR/ethereumjs --gethGenesis $scr
 run_cmd "$ejsCmd"
 ejsPid=$!
 echo "ejsPid: $ejsPid"
+ejsPidBySearch=$(ps | grep "$DATADIR/ethereumjs" | grep -v grep | awk '{print $1}')
+echo "ejsPidBySearch: $ejsPidBySearch"
 
 ejsId=0
 if [ ! -n "$GENESIS_HASH" ]
@@ -116,6 +114,8 @@ fi;
 run_cmd "$lodeCmd"
 lodePid=$!
 echo "lodePid: $lodePid"
+lodePidBySearch=$(ps | grep "$DATADIR/lodestar" | grep -v grep | awk '{print $1}')
+echo "lodePidBySearch: $lodePidBySearch"
 
 trap "echo exit signal recived;cleanup" SIGINT SIGTERM
 
