@@ -2,8 +2,6 @@ import { Capability } from '@ethereumjs/tx'
 import { Address, bufferToHex } from '@ethereumjs/util'
 import Heap = require('qheap')
 
-import { short } from '../util'
-
 import type { Config } from '../config'
 import type { Peer } from '../net/peer'
 import type { PeerPool } from '../net/peerpool'
@@ -648,7 +646,6 @@ export class TxPool {
   async txsByPriceAndNonce(vm: VM, baseFee?: bigint) {
     const txs: TypedTransaction[] = []
     // Separate the transactions by account and sort by nonce
-    const stateRoot = await this.vm.eei.getStateRoot()
     const byNonce = new Map<string, TypedTransaction[]>()
     for (const [address, poolObjects] of this.pool) {
       let txsSortedByNonce = poolObjects

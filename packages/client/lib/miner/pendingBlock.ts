@@ -1,7 +1,5 @@
 import { randomBytes } from 'crypto'
 
-import { short } from '../util'
-
 import type { Config } from '../config'
 import type { TxPool } from '../service/txpool'
 import type { Block, HeaderData } from '@ethereumjs/block'
@@ -47,9 +45,7 @@ export class PendingBlock {
     // Set the state root to ensure the resulting state
     // is based on the parent block's state
     await vm.eei.setStateRoot(parentBlock.header.stateRoot)
-    await this.txPool['vm'].eei.setStateRoot(parentBlock.header.stateRoot)
 
-    const newStateRoot = await vm.eei.getStateRoot()
     if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
       throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
     }
