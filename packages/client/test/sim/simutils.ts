@@ -45,7 +45,7 @@ async function isPortInUse(port: number): Promise<boolean> {
 export async function waitForELOffline(): Promise<void> {
   const port = 30303
 
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 30; i++) {
     console.log('Waiting for EL offline...')
     const isInUse = await isPortInUse(port)
     if (!isInUse) {
@@ -53,7 +53,7 @@ export async function waitForELOffline(): Promise<void> {
     }
     await sleep(4000)
   }
-  throw Error('EL not offline in 60 seconds')
+  throw Error('EL not offline in 120 seconds')
 }
 
 type RunOpts = {
@@ -111,7 +111,7 @@ export function runNetwork(
       throw Error('network is killed before end of test')
     }
     console.log('Killing network process', runProc.pid)
-    execSync(`kill -15 ${runProc.pid}`)
+    execSync(`pkill -15 -P ${runProc.pid}`)
     // Wait for the P2P to be offline
     await waitForELOffline()
     console.log('network successfully killed!')
