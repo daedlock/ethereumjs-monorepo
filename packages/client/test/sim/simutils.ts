@@ -166,7 +166,7 @@ export async function runTxHelper(
   let receipt
   console.log(`tx: ${res.result}`)
   let tries = 0
-  while (!mined && tries < 5) {
+  while (!mined && tries < 50) {
     tries++
     receipt = await client.request('eth_getTransactionReceipt', [res.result])
     if (receipt.result !== null) {
