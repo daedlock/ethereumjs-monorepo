@@ -469,7 +469,9 @@ export class Eth {
       // If no gas price or maxFeePerGas provided, use current block base fee for gas estimates
       if (transaction.type !== undefined && parseInt(transaction.type) === 2) {
         transaction.maxFeePerGas = '0x' + block.header.baseFeePerGas?.toString(16)
-      } else transaction.gasPrice = '0x' + block.header.baseFeePerGas?.toString(16)
+      } else if (block.header.baseFeePerGas !== undefined) {
+        transaction.gasPrice = '0x' + block.header.baseFeePerGas?.toString(16)
+      }
     }
 
     const txData = {
@@ -492,6 +494,7 @@ export class Eth {
         skipNonce: true,
         skipBalance: true,
         skipBlockGasLimitValidation: true,
+        block,
       })
       return `0x${totalGasSpent.toString(16)}`
     } catch (error: any) {
