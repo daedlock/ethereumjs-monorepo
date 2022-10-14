@@ -367,6 +367,7 @@ export class Eth {
     )
 
     this.feeHistory = middleware(this.feeHistory.bind(this), 0, [])
+    this.gasPrice = middleware(this.gasPrice.bind(this), 0, [])
   }
 
   /**
@@ -1018,5 +1019,11 @@ export class Eth {
       oldestBlock: '0x' + latest.number.toString(16),
       gasUsedRatio: [0.5],
     }
+  }
+
+  async gasPrice() {
+    const latest = await this._chain.getCanonicalHeadHeader()
+    const gasPrice = latest.calcNextBaseFee()
+    return '0x' + gasPrice.toString(16)
   }
 }
