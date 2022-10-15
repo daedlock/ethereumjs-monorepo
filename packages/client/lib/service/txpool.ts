@@ -647,6 +647,7 @@ export class TxPool {
     const txs: TypedTransaction[] = []
     // Separate the transactions by account and sort by nonce
     const byNonce = new Map<string, TypedTransaction[]>()
+    const skippedStats = { byNonce: 0, byPrice: 0 }
     for (const [address, poolObjects] of this.pool) {
       let txsSortedByNonce = poolObjects
         .map((obj) => obj.tx)
@@ -656,6 +657,7 @@ export class TxPool {
       if (txsSortedByNonce[0].nonce !== nonce) {
         // Account nonce does not match the lowest known tx nonce,
         // therefore no txs from this address are currently executable
+        skippedStats.byNonce += txsSortedByNonce.length
         continue
       }
       if (typeof baseFee === 'bigint' && baseFee !== BigInt(0)) {
@@ -663,6 +665,7 @@ export class TxPool {
         // remove all txs after that since they cannot be executed
         const found = txsSortedByNonce.findIndex((tx) => this.normalizedGasPrice(tx) < baseFee)
         if (found > -1) {
+          skippedStats.byPrice += found + 1
           txsSortedByNonce = txsSortedByNonce.slice(0, found)
         }
       }
@@ -692,6 +695,9 @@ export class TxPool {
       // Accumulate the best priced transaction
       txs.push(best)
     }
+    this.config.logger.info(
+      `txsByPriceAndNonce selected txs=${txs.length} skipped=${JSON.stringify(skippedStats)}`
+    )
     return txs
   }
 
