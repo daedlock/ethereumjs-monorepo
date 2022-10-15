@@ -696,7 +696,7 @@ export class TxPool {
       txs.push(best)
     }
     this.config.logger.info(
-      `txsByPriceAndNonce selected txs=${txs.length} skipped=${JSON.stringify(skippedStats)}`
+      `txsByPriceAndNonce selected txs=${txs.length}, skipped byNonce=${skippedStats.byNonce} byPrice=${skippedStats.byPrice}`
     )
     return txs
   }
@@ -724,8 +724,18 @@ export class TxPool {
   }
 
   _logPoolStats() {
+    let broadcasts = 0
+    let knownpeers = 0
+    for (const sendobjects of this.knownByPeer.values()) {
+      broadcasts += sendobjects.length
+      knownpeers++
+    }
+    // Get avergae
+    if (knownpeers > 0) {
+      broadcasts = broadcasts / knownpeers
+    }
     this.config.logger.info(
-      `TxPool Statistics txs=${this.txsInPool} senders=${this.pool.size} peers=${this.service.pool.peers.length}`
+      `TxPool Statistics txs=${this.txsInPool} senders=${this.pool.size} peers=${this.service.pool.peers.length}, broadcasts=${broadcasts} per peer to ${knownpeers}`
     )
   }
 }
