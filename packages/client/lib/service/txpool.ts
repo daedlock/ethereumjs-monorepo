@@ -34,16 +34,19 @@ type TxPoolObject = {
   tx: TypedTransaction
   hash: UnprefixedHash
   added: number
+  error?: Error
 }
 
 type HandledObject = {
   address: UnprefixedAddress
   added: number
+  error?: Error
 }
 
 type SentObject = {
   hash: UnprefixedHash
   added: number
+  error?: Error
 }
 
 type UnprefixedAddress = string
@@ -311,20 +314,25 @@ export class TxPool {
    * @param isLocalTransaction if this is a local transaction (loosens some constraints) (default: false)
    */
   async add(tx: TypedTransaction, isLocalTransaction: boolean = false) {
-    await this.validate(tx, isLocalTransaction)
-    const address: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
-    let add: TxPoolObject[] = this.pool.get(address) ?? []
-    const inPool = this.pool.get(address)
-    if (inPool) {
-      // Replace pooled txs with the same nonce
-      add = inPool.filter((poolObj) => poolObj.tx.nonce !== tx.nonce)
-    }
     const hash: UnprefixedHash = tx.hash().toString('hex')
     const added = Date.now()
-    add.push({ tx, added, hash })
-    this.pool.set(address, add)
-    this.handled.set(hash, { address, added })
-    this.txsInPool++
+    const address: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
+    try {
+      await this.validate(tx, isLocalTransaction)
+      let add: TxPoolObject[] = this.pool.get(address) ?? []
+      const inPool = this.pool.get(address)
+      if (inPool) {
+        // Replace pooled txs with the same nonce
+        add = inPool.filter((poolObj) => poolObj.tx.nonce !== tx.nonce)
+      }
+      add.push({ tx, added, hash })
+      this.pool.set(address, add)
+      this.handled.set(hash, { address, added })
+      this.txsInPool++
+    } catch (e) {
+      this.handled.set(hash, { address, added, error: e as Error })
+      throw e
+    }
   }
 
   /**
@@ -418,7 +426,18 @@ export class TxPool {
 
       // Broadcast to peer if at least 1 new tx hash to announce
       if (hashesToSend.length > 0) {
-        peer.eth?.send('NewPooledTransactionHashes', hashesToSend)
+        try {
+          await peer.eth?.request('newPooledTransactionHashes', hashesToSend)
+        } catch (e) {
+          for (const txHash of hashesToSend) {
+            const sendobject = this.knownByPeer
+              .get(peer.id)
+              ?.filter((sendObject) => sendObject.hash === txHash.toString('hex'))[0]
+            if (sendobject) {
+              sendobject.error = e as Error
+            }
+          }
+        }
       }
     }
   }
@@ -725,17 +744,40 @@ export class TxPool {
 
   _logPoolStats() {
     let broadcasts = 0
+    let broadcasterrors = 0
     let knownpeers = 0
     for (const sendobjects of this.knownByPeer.values()) {
       broadcasts += sendobjects.length
+      broadcasterrors += sendobjects.filter((sendobject) => sendobject.error !== undefined).length
       knownpeers++
     }
     // Get avergae
     if (knownpeers > 0) {
       broadcasts = broadcasts / knownpeers
+      broadcasterrors = broadcasterrors / knownpeers
+    }
+    if (this.txsInPool > 0) {
+      broadcasts = broadcasts / this.txsInPool
+      broadcasterrors = broadcasterrors / this.txsInPool
+    }
+
+    let handledadds = 0
+    let handlederrors = 0
+    for (const handledobject of this.handled.values()) {
+      if (handledobject.error === undefined) {
+        handledadds++
+      } else {
+        handlederrors++
+      }
     }
     this.config.logger.info(
-      `TxPool Statistics txs=${this.txsInPool} senders=${this.pool.size} peers=${this.service.pool.peers.length}, broadcasts=${broadcasts} per peer to ${knownpeers}`
+      `TxPool Statistics txs=${this.txsInPool} senders=${this.pool.size} peers=${this.service.pool.peers.length}`
+    )
+    this.config.logger.info(
+      `TxPool Statistics broadcasts=${broadcasts}/tx/peer broadcasterrors=${broadcasterrors}/tx/peer knownpeers=${knownpeers} since minutes=${this.POOLED_STORAGE_TIME_LIMIT}`
+    )
+    this.config.logger.info(
+      `TxPool Statistics successfuladds=${handledadds} failedadds=${handlederrors} since ${this.HANDLED_CLEANUP_TIME_LIMIT} seconds`
     )
   }
 }
