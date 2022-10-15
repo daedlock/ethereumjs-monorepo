@@ -777,7 +777,7 @@ export class TxPool {
       `TxPool Statistics broadcasts=${broadcasts}/tx/peer broadcasterrors=${broadcasterrors}/tx/peer knownpeers=${knownpeers} since minutes=${this.POOLED_STORAGE_TIME_LIMIT}`
     )
     this.config.logger.info(
-      `TxPool Statistics successfuladds=${handledadds} failedadds=${handlederrors} since ${this.HANDLED_CLEANUP_TIME_LIMIT} seconds`
+      `TxPool Statistics successfuladds=${handledadds} failedadds=${handlederrors} since minutes=${this.HANDLED_CLEANUP_TIME_LIMIT}`
     )
   }
 }
