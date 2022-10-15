@@ -427,7 +427,7 @@ export class TxPool {
       // Broadcast to peer if at least 1 new tx hash to announce
       if (hashesToSend.length > 0) {
         try {
-          await peer.eth?.request('newPooledTransactionHashes', hashesToSend)
+          await peer.eth?.request('NewPooledTransactionHashes', hashesToSend)
         } catch (e) {
           for (const txHash of hashesToSend) {
             const sendobject = this.knownByPeer
