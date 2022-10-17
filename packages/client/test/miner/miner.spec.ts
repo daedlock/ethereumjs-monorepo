@@ -48,6 +48,11 @@ tape('[Miner]', async (t) => {
 
   const originalSetStateRoot = VmState.prototype.setStateRoot
   VmState.prototype.setStateRoot = td.func<any>()
+
+  // Stub out setStateRoot so txPool.validate checks will pass since correct state root
+  // doesn't existin fakeChain state anyway
+  const ogStateManagerSetStateRoot = DefaultStateManager.prototype.setStateRoot
+  DefaultStateManager.prototype.setStateRoot = td.func<any>()
   td.replace('@ethereumjs/vm/dist/vmState', { VmState })
 
   // Stub out setStateRoot so txPool.validate checks will pass since correct state root
@@ -196,6 +201,7 @@ tape('[Miner]', async (t) => {
       const miner = new Miner({ config, service })
       const { txPool } = service
       const { vm } = service.execution
+
       txPool.start()
       miner.start()
 
@@ -252,6 +258,7 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, service })
     const { txPool } = service
     const { vm } = service.execution
+
     txPool.start()
     miner.start()
 
@@ -301,6 +308,7 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, service })
     const { txPool } = service
     const { vm } = service.execution
+
     txPool.start()
     miner.start()
 
@@ -347,6 +355,7 @@ tape('[Miner]', async (t) => {
 
     const { txPool } = service
     const { vm } = service.execution
+
     txPool.start()
     miner.start()
 
