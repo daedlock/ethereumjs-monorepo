@@ -1,5 +1,6 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Transaction } from '@ethereumjs/tx'
 import { Account, Address } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
