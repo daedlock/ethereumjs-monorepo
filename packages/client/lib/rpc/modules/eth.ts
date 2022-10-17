@@ -1021,9 +1021,24 @@ export class Eth {
     }
   }
 
+  /**
+   * Returns an estimate of the current gas price based on the most recent block
+   * @returns the current gasPrice in gwei as a hex prefixed string
+   */
   async gasPrice() {
+    let gasPrice: bigint = BigInt(0)
     const latest = await this._chain.getCanonicalHeadHeader()
-    const gasPrice = latest.calcNextBaseFee()
+    if (this._vm !== undefined && this._vm._common.isActivatedEIP(1559)) {
+      gasPrice = latest.calcNextBaseFee()
+    } else {
+      if (latest.gasUsed > BigInt(0)) gasPrice = latest.gasUsed
+      else {
+        while (gasPrice === BigInt(0)) {
+          const nextBlock = await this._chain.getBlock(latest.number - BigInt(1))
+          if (nextBlock.header.gasUsed > BigInt(0)) gasPrice = nextBlock.header.gasUsed
+        }
+      }
+    }
     return '0x' + gasPrice.toString(16)
   }
 }
