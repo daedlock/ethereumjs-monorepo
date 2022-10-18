@@ -99,3 +99,19 @@ The script should auto clean the processes. In case it fails to do so:
 
 1. Remove lodestar by `docker rm -f beacon`
 2. Find the ethereumjs process by doing `ps -a | grep client` and do `kill <process id>`
+
+### Multi peer setup
+
+Start peer 1
+
+```
+DATADIR=/data/shandong LODE_BINARY=lodestar MULTIPEER=peer1 test/sim/./single-run.sh
+```
+
+As soon as you see lodestar started and see a count down to genesis, you can start peer 2:
+
+```
+DATADIR=/data/shandong LODE_BINARY=lodestar MULTIPEER=peer2 test/sim/./single-run.sh
+```
+
+(Pls use lodestar stable version i.e. `latest` tag, if you omit `LODE_BINARY` then `chainsafe/lodestar:latest` docker image will be used)

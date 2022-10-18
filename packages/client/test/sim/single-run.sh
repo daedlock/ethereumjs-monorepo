@@ -8,9 +8,29 @@ scriptDir="$currentDir/$scriptDir"
 if [ ! -n "$DATADIR" ]
 then
   DATADIR="$scriptDir/data"
-  mkdir $DATADIR
 fi;
+mkdir $DATADIR
+origDataDir=$DATADIR
 
+if [ "$MULTIPEER" != "peer2" ]
+then 
+  DATADIR="$DATADIR/peer1"
+  EL_PORT_ARGS=""
+  if [ ! -n "$MULTIPEER" ]
+  then
+    CL_PORT_ARGS="--genesisValidators 8 --startValidators 0..7"
+  else
+    CL_PORT_ARGS="--enr.ip 127.0.0.1 --enr.tcp 9000 --enr.udp 9000 --genesisValidators 8 --startValidators 0..3"
+  fi;
+else
+  DATADIR="$DATADIR/peer2"
+  bootEnrs=$(cat "$origDataDir/peer1/lodestar/enr")
+  EL_PORT_ARGS="--port 30304 --rpcEnginePort 8552 --rpcport 8946 --multiaddrs /ip4/127.0.0.1/tcp/50581/ws"
+  CL_PORT_ARGS="--genesisValidators 8 --startValidators 4..7 --port 9001 --execution.urls http://localhost:8552  --rest false --network.connectToDiscv5Bootnodes true --bootnodes $bootEnrs"
+fi;
+mkdir $DATADIR
+echo "EL_PORT_ARGS=$EL_PORT_ARGS"
+echo "CL_PORT_ARGS=$CL_PORT_ARGS"
 # just use default network as shandong, can be omitted later as more custom networks get added
 if [ ! -n "$NETWORK" ]
 then
@@ -62,7 +82,7 @@ cleanup() {
     echo "cleaning lodestar pid:${lodePid} lodePidBySearch:${lodePidBySearch}..."
     if [ ! -n "$LODE_BINARY" ]
     then
-      docker rm beacon -f
+      docker rm beacon${MULTIPEER} -f
     else
       kill $lodePidBySearch
     fi;
@@ -72,44 +92,58 @@ cleanup() {
   lodePid=""
 }
 
-ejsCmd="npm run client:start -- --datadir $DATADIR/ethereumjs --gethGenesis $scriptDir/configs/$NETWORK-genesis.json --rpc --rpcEngine --rpcEngineAuth false"
+ejsCmd="npm run client:start -- --datadir $DATADIR/ethereumjs --gethGenesis $scriptDir/configs/$NETWORK-genesis.json --rpc --rpcEngine --rpcEngineAuth false $EL_PORT_ARGS"
 run_cmd "$ejsCmd"
 ejsPid=$!
 echo "ejsPid: $ejsPid"
 
-ejsId=0
-if [ ! -n "$GENESIS_HASH" ]
+if [ "$MULTIPEER" != "peer2" ] 
 then
-  # We should curl and get genesis hash, but for now lets assume it will be provided
-  while [ ! -n "$GENESIS_HASH" ]
-  do
-    sleep 3
-    echo "Fetching genesis hash from ethereumjs ..."
-    ejsId=$(( ejsId +1 ))
-    responseCmd="curl --location --request POST 'http://localhost:8545' --header 'Content-Type: application/json' --data-raw '{
-      \"jsonrpc\": \"2.0\",
-      \"method\": \"eth_getBlockByNumber\",
-      \"params\": [
-          \"0x0\",
-          true
-      ],
-      \"id\": $ejsId
-    }' 2>/dev/null | jq \".result.hash\""
-    # echo "$responseCmd"
-    GENESIS_HASH=$(eval "$responseCmd")
-  done;
-fi
-echo "genesisHash=${GENESIS_HASH}"
+  # generate the genesis hash and time
+  ejsId=0
+  if [ ! -n "$GENESIS_HASH" ]
+  then
+    # We should curl and get genesis hash, but for now lets assume it will be provided
+    while [ ! -n "$GENESIS_HASH" ]
+    do
+      sleep 3
+      echo "Fetching genesis hash from ethereumjs ..."
+      ejsId=$(( ejsId +1 ))
+      responseCmd="curl --location --request POST 'http://localhost:8545' --header 'Content-Type: application/json' --data-raw '{
+        \"jsonrpc\": \"2.0\",
+        \"method\": \"eth_getBlockByNumber\",
+        \"params\": [
+            \"0x0\",
+            true
+        ],
+        \"id\": $ejsId
+      }' 2>/dev/null | jq \".result.hash\""
+      # echo "$responseCmd"
+      GENESIS_HASH=$(eval "$responseCmd")
+    done;
+  fi
 
-genTime="$(date +%s)"
-genTime=$((genTime + 15))
+  genTime="$(date +%s)"
+  genTime=$((genTime + 30))
+  echo $genTime > "$origDataDir/genesisTime"
+  echo $GENESIS_HASH > "$origDataDir/geneisHash"
+else
+  genTime=$(cat "$origDataDir/genesisTime")
+  GENESIS_HASH=$(cat "$origDataDir/geneisHash")
+fi;
+
+echo "genesisHash=${GENESIS_HASH}"
 echo "genTime=${genTime}"
 
 if [ ! -n "$LODE_BINARY" ]
 then
-  lodeCmd="docker run --rm --name beacon -v $DATADIR:/data --network host chainsafe/lodestar:latest dev --dataDir /data/lodestar --genesisValidators 8 --startValidators 0..7 --enr.ip 127.0.0.1 --genesisEth1Hash $GENESIS_HASH --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime $genTime"
+  if [ ! -n "$LODE_IMAGE" ]
+  then
+    LODE_IMAGE="chainsafe/lodestar:latest"
+  fi;
+  lodeCmd="docker run --rm --name beacon${MULTIPEER} -v $DATADIR:/data --network host $LODE_IMAGE dev --dataDir /data/lodestar --genesisEth1Hash $GENESIS_HASH --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime $genTime $CL_PORT_ARGS"
 else
-  lodeCmd="$LODE_BINARY dev --dataDir $DATADIR/lodestar --genesisValidators 8 --startValidators 0..7 --enr.ip 127.0.0.1 --genesisEth1Hash $GENESIS_HASH --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime $genTime"
+  lodeCmd="$LODE_BINARY dev --dataDir $DATADIR/lodestar --genesisEth1Hash $GENESIS_HASH --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime $genTime $CL_PORT_ARGS --suggestedFeeRecipient 0xcccccccccccccccccccccccccccccccccccccccc"
 fi;
 run_cmd "$lodeCmd"
 lodePid=$!
