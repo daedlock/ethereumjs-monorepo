@@ -193,6 +193,10 @@ export class EthProtocol extends Protocol {
     {
       name: 'NewPooledTransactionHashes',
       code: 0x08,
+      encode: ({ hashes }: { hashes: Buffer[] }) => [hashes],
+      decode: ([hashes]: [Buffer[]]) => {
+        hashes
+      },
     },
     {
       name: 'GetPooledTransactions',
