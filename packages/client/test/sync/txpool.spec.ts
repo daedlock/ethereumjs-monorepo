@@ -169,12 +169,19 @@ tape('[TxPool]', async (t) => {
         send: () => {
           t.fail('should not send to announcing peer')
         },
+        request: () => {
+          t.fail('should not send to announcing peer')
+        },
       },
     }
     let sentToPeer2 = 0
     const peer2: any = {
       id: '2',
       eth: {
+        send: () => {
+          sentToPeer2++
+          t.equal(sentToPeer2, 1, 'should send once to non-announcing peer')
+        },
         request: () => {
           sentToPeer2++
           t.equal(sentToPeer2, 1, 'should send once to non-announcing peer')
