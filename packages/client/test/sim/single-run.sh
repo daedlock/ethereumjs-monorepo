@@ -26,7 +26,7 @@ else
   DATADIR="$DATADIR/peer2"
   bootEnrs=$(cat "$origDataDir/peer1/lodestar/enr")
   EL_PORT_ARGS="--port 30304 --rpcEnginePort 8552 --rpcport 8946 --multiaddrs /ip4/127.0.0.1/tcp/50581/ws"
-  CL_PORT_ARGS="--genesisValidators 8 --startValidators 4..7 --port 9001 --execution.urls http://localhost:8552  --rest false --network.connectToDiscv5Bootnodes true --bootnodes $bootEnrs"
+  CL_PORT_ARGS="--genesisValidators 8 --startValidators 4..7 --enr.tcp 9001 --port 9001 --execution.urls http://localhost:8552  --rest false --network.connectToDiscv5Bootnodes true --bootnodes $bootEnrs"
 fi;
 mkdir $DATADIR
 echo "EL_PORT_ARGS=$EL_PORT_ARGS"
@@ -135,15 +135,16 @@ fi;
 echo "genesisHash=${GENESIS_HASH}"
 echo "genTime=${genTime}"
 
+CL_PORT_ARGS="--genesisEth1Hash $GENESIS_HASH --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime $genTime ${CL_PORT_ARGS} --suggestedFeeRecipient 0xcccccccccccccccccccccccccccccccccccccccc --network.maxPeers 55 --targetPeers 50"
 if [ ! -n "$LODE_BINARY" ]
 then
   if [ ! -n "$LODE_IMAGE" ]
   then
     LODE_IMAGE="chainsafe/lodestar:latest"
   fi;
-  lodeCmd="docker run --rm --name beacon${MULTIPEER} -v $DATADIR:/data --network host $LODE_IMAGE dev --dataDir /data/lodestar --genesisEth1Hash $GENESIS_HASH --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime $genTime $CL_PORT_ARGS"
+  lodeCmd="DEBUG=* docker run --rm --name beacon${MULTIPEER} -v $DATADIR:/data --network host $LODE_IMAGE dev --dataDir /data/lodestar  $CL_PORT_ARGS"
 else
-  lodeCmd="$LODE_BINARY dev --dataDir $DATADIR/lodestar --genesisEth1Hash $GENESIS_HASH --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime $genTime $CL_PORT_ARGS --suggestedFeeRecipient 0xcccccccccccccccccccccccccccccccccccccccc"
+  lodeCmd="$LODE_BINARY dev --dataDir $DATADIR/lodestar $CL_PORT_ARGS"
 fi;
 run_cmd "$lodeCmd"
 lodePid=$!
