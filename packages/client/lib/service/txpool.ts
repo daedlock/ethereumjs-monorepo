@@ -429,14 +429,7 @@ export class TxPool {
         try {
           await peer.eth?.request('NewPooledTransactionHashes', hashesToSend)
         } catch (e) {
-          for (const txHash of hashesToSend) {
-            const sendobject = this.knownByPeer
-              .get(peer.id)
-              ?.filter((sendObject) => sendObject.hash === txHash.toString('hex'))[0]
-            if (sendobject) {
-              sendobject.error = e as Error
-            }
-          }
+          this.markFailedSends(peer, hashesToSend, e as Error)
         }
       }
     }
@@ -457,8 +450,23 @@ export class TxPool {
       for (const peer of peers) {
         // This is used to avoid re-sending along pooledTxHashes
         // announcements/re-broadcasts
-        this.addToKnownByPeer(hashes, peer)
-        peer.eth?.send('Transactions', txs)
+        const newHashes = this.addToKnownByPeer(hashes, peer)
+        const newHashesHex = newHashes.map((txHash) => txHash.toString('hex'))
+        const nexTxs = txs.filter((tx) => newHashesHex.includes(tx.hash().toString('hex')))
+        peer.eth?.request('Transactions', nexTxs).catch((e) => {
+          this.markFailedSends(peer, newHashes, e as Error)
+        })
+      }
+    }
+  }
+
+  private markFailedSends(peer: Peer, failedHashes: Buffer[], e: Error): void {
+    for (const txHash of failedHashes) {
+      const sendobject = this.knownByPeer
+        .get(peer.id)
+        ?.filter((sendObject) => sendObject.hash === txHash.toString('hex'))[0]
+      if (sendobject) {
+        sendobject.error = e
       }
     }
   }

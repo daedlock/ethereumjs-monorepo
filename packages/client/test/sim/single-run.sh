@@ -34,7 +34,7 @@ else
   bootEnrs=$(cat "$origDataDir/peer1/lodestar/enr")
   elBootnode=$(cat "$origDataDir/peer1/ethereumjs/$NETWORK/rlpx");
   EL_PORT_ARGS="--port 30304 --rpcEnginePort 8552 --rpcport 8946 --multiaddrs /ip4/127.0.0.1/tcp/50581/ws --bootnodes $elBootnode --loglevel debug"
-  CL_PORT_ARGS="--genesisValidators 8 --startValidators 4..7 --enr.tcp 9001 --port 9001 --execution.urls http://localhost:8552  --rest false --network.connectToDiscv5Bootnodes true --bootnodes $bootEnrs"
+  CL_PORT_ARGS="--genesisValidators 8 --startValidators 4..7 --enr.tcp 9001 --port 9001 --execution.urls http://localhost:8552  --rest.port 9597 --server http://localhost:9597 --network.connectToDiscv5Bootnodes true --bootnodes $bootEnrs"
 fi;
 mkdir $DATADIR
 echo "EL_PORT_ARGS=$EL_PORT_ARGS"
@@ -144,7 +144,7 @@ then
   then
     LODE_IMAGE="chainsafe/lodestar:latest"
   fi;
-  lodeCmd="DEBUG=* docker run --rm --name beacon${MULTIPEER} -v $DATADIR:/data --network host $LODE_IMAGE dev --dataDir /data/lodestar  $CL_PORT_ARGS"
+  lodeCmd="docker run --rm --name beacon${MULTIPEER} -v $DATADIR:/data --network host $LODE_IMAGE dev --dataDir /data/lodestar  $CL_PORT_ARGS"
 else
   lodeCmd="$LODE_BINARY dev --dataDir $DATADIR/lodestar $CL_PORT_ARGS"
 fi;
