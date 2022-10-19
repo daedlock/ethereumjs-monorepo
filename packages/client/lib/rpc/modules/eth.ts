@@ -264,7 +264,7 @@ export class Eth {
     this.blockNumber = middleware(this.blockNumber.bind(this), 0)
 
     this.call = middleware(this.call.bind(this), 2, [
-      [validators.transaction()],
+      [validators.transaction(['to'])],
       [validators.blockOption],
     ])
 
