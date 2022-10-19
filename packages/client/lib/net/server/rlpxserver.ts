@@ -54,14 +54,13 @@ export class RlpxServer extends Server {
 
   public rlpx: Devp2pRLPx | null = null
   public dpt: Devp2pDPT | null = null
-  public ip: string = '::'
+  public ip: string
 
   /**
    * Create new DevP2P/RLPx server
    */
   constructor(options: RlpxServerOptions) {
     super(options)
-
     this.ip = options.config.extIP ?? '::'
     this.discovery = options.config.discV4 || options.config.discDns
     this.clientFilter = options.clientFilter ?? [
@@ -99,8 +98,11 @@ export class RlpxServer extends Server {
       }
     }
     const id = this.rlpx._id.toString('hex')
+    const address = this.ip.match(/^(\d+\.\d+\.\d+\.\d+)$/)
+      ? `${this.ip}:${this.config.port}`
+      : `[${this.ip}]:${this.config.port}`
     return {
-      enode: `enode://${id}@[${this.ip}]:${this.config.port}`,
+      enode: `enode://${id}@${address}`,
       id,
       ip: this.ip,
       listenAddr: `[${this.ip}]:${this.config.port}`,

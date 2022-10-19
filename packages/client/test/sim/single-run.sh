@@ -12,10 +12,17 @@ fi;
 mkdir $DATADIR
 origDataDir=$DATADIR
 
+# just use default network as shandong, can be omitted later as more custom networks get added
+if [ ! -n "$NETWORK" ]
+then
+  echo "network not provide via NETWORK env variable, default to shandong..."
+  NETWORK="shandong-genesis";
+fi;
+
 if [ "$MULTIPEER" != "peer2" ]
 then 
   DATADIR="$DATADIR/peer1"
-  EL_PORT_ARGS=""
+  EL_PORT_ARGS="--extIP 127.0.0.1"
   if [ ! -n "$MULTIPEER" ]
   then
     CL_PORT_ARGS="--genesisValidators 8 --startValidators 0..7"
@@ -25,18 +32,13 @@ then
 else
   DATADIR="$DATADIR/peer2"
   bootEnrs=$(cat "$origDataDir/peer1/lodestar/enr")
-  EL_PORT_ARGS="--port 30304 --rpcEnginePort 8552 --rpcport 8946 --multiaddrs /ip4/127.0.0.1/tcp/50581/ws"
+  elBootnode=$(cat "$origDataDir/peer1/ethereumjs/$NETWORK/rlpx");
+  EL_PORT_ARGS="--port 30304 --rpcEnginePort 8552 --rpcport 8946 --multiaddrs /ip4/127.0.0.1/tcp/50581/ws --bootnodes $elBootnode --loglevel debug"
   CL_PORT_ARGS="--genesisValidators 8 --startValidators 4..7 --enr.tcp 9001 --port 9001 --execution.urls http://localhost:8552  --rest false --network.connectToDiscv5Bootnodes true --bootnodes $bootEnrs"
 fi;
 mkdir $DATADIR
 echo "EL_PORT_ARGS=$EL_PORT_ARGS"
 echo "CL_PORT_ARGS=$CL_PORT_ARGS"
-# just use default network as shandong, can be omitted later as more custom networks get added
-if [ ! -n "$NETWORK" ]
-then
-  echo "network not provide via NETWORK env variable, default to shandong..."
-  NETWORK="shandong";
-fi;
 
 if [ ! -n "$DATADIR" ] || (touch $DATADIR/shandong.txt) && [ ! -n "$(ls -A $DATADIR)" ]
 then
@@ -92,7 +94,7 @@ cleanup() {
   lodePid=""
 }
 
-ejsCmd="npm run client:start -- --datadir $DATADIR/ethereumjs --gethGenesis $scriptDir/configs/$NETWORK-genesis.json --rpc --rpcEngine --rpcEngineAuth false $EL_PORT_ARGS"
+ejsCmd="npm run client:start -- --datadir $DATADIR/ethereumjs --gethGenesis $scriptDir/configs/$NETWORK.json --rpc --rpcEngine --rpcEngineAuth false $EL_PORT_ARGS"
 run_cmd "$ejsCmd"
 ejsPid=$!
 echo "ejsPid: $ejsPid"
