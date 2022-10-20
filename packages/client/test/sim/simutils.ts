@@ -144,13 +144,13 @@ export async function runTxHelper(
   const nonce = BigInt((await client.request('eth_getTransactionCount', [sender, 'latest'])).result)
 
   const block = await client.request('eth_getBlockByNumber', ['latest', false])
-  const maxFeePerGas = BigInt(block.result.baseFeePerGas) * 100n
+  const baseFeePerGas = BigInt(block.result.baseFeePerGas) * 100n
   const maxPriorityFeePerGas = 100000000n
   const tx = FeeMarketEIP1559Transaction.fromTxData(
     {
       data,
       gasLimit: 1000000,
-      maxFeePerGas,
+      maxFeePerGas: baseFeePerGas + maxPriorityFeePerGas,
       maxPriorityFeePerGas,
       nonce,
       to,
