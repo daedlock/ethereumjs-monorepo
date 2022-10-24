@@ -10,7 +10,7 @@ const sender = '0x' + privateToAddress(pkey).toString('hex')
 const client = Client.http({ port: 8545 })
 
 const network = 'shandong'
-const shandongJson = require(`./configs/${network}-genesis.json`)
+const shandongJson = require(`./configs/${network}.json`)
 const common = Common.fromGethGenesis(shandongJson, { chain: network })
 
 export async function runTx(data: string, to?: string, value?: bigint) {

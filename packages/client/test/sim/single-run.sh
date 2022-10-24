@@ -16,7 +16,7 @@ origDataDir=$DATADIR
 if [ ! -n "$NETWORK" ]
 then
   echo "network not provide via NETWORK env variable, default to shandong..."
-  NETWORK="shandong-genesis";
+  NETWORK="shandong";
 fi;
 
 if [ "$MULTIPEER" != "peer2" ]
