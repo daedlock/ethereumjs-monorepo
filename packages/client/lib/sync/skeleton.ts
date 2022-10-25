@@ -188,7 +188,12 @@ export class Skeleton extends MetaDBManager {
       // Not a noop / double head announce, abort with a reorg
       if (force) {
         this.config.logger.warn(
-          `Beacon chain reorged tail=${lastchain.tail} head=${lastchain.head} newHead=${number}`
+          `Skeleton setHead behind tail, resetting skeleton tail=${lastchain.tail} head=${lastchain.head} newHead=${number}`
+        )
+        this.status.progress.subchains = []
+      } else {
+        this.config.logger.warn(
+          `Skeleton announcement behind tail, will reset skeleton tail=${lastchain.tail} head=${lastchain.head} newHead=${number}`
         )
       }
       return true
