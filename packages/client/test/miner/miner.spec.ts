@@ -55,11 +55,6 @@ tape('[Miner]', async (t) => {
   const ogStateManagerSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = td.func<any>()
 
-  // Stub out setStateRoot so txPool.validate checks will pass since correct state root
-  // doesn't exist in fakeChain state anyway
-  const ogStateManagerSetStateRoot = DefaultStateManager.prototype.setStateRoot
-  DefaultStateManager.prototype.setStateRoot = td.func<any>()
-
   class FakeChain {
     open() {}
     close() {}

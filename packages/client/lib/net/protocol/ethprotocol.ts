@@ -19,7 +19,7 @@ import type { TxReceiptWithType } from '../../execution/receipt'
 import type { Message, ProtocolOptions } from './protocol'
 import type { BlockBodyBuffer, BlockBuffer, BlockHeaderBuffer } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { BigIntLike } from '@ethereumjs/util'
+import type { BigIntLike, BufferLike } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
 
 interface EthProtocolOptions extends ProtocolOptions {
@@ -72,6 +72,15 @@ export interface EthProtocolMethods {
   getReceipts: (opts: GetReceiptsOpts) => Promise<[bigint, TxReceipt[]]>
 }
 
+function devP2PBigintToBuffer(input: bigint | number): BufferLike {
+  const inputNum = BigInt(input)
+  if (inputNum === 0n) {
+    return 0
+  } else {
+    return bigIntToBuffer(inputNum)
+  }
+}
+
 /**
  * Implements eth/66 protocol
  * @memberof module:net/protocol
@@ -116,9 +125,9 @@ export class EthProtocol extends Protocol {
       code: 0x03,
       response: 0x04,
       encode: ({ reqId, block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
-        bigIntToBuffer(reqId ?? ++this.nextReqId),
+        devP2PBigintToBuffer(reqId ?? ++this.nextReqId),
         [
-          typeof block === 'bigint' ? bigIntToBuffer(block) : block,
+          typeof block === 'bigint' ? devP2PBigintToBuffer(block) : block,
           max === 0 ? Buffer.from([]) : intToBuffer(max),
           skip === 0 ? Buffer.from([]) : intToBuffer(skip),
           !reverse ? Buffer.from([]) : Buffer.from([1]),
@@ -136,7 +145,7 @@ export class EthProtocol extends Protocol {
       name: 'BlockHeaders',
       code: 0x04,
       encode: ({ reqId, headers }: { reqId: bigint; headers: BlockHeader[] }) => [
-        bigIntToBuffer(reqId),
+        devP2PBigintToBuffer(reqId),
         headers.map((h) => h.raw()),
       ],
       decode: ([reqId, headers]: [Buffer, BlockHeaderBuffer[]]) => [
@@ -161,7 +170,7 @@ export class EthProtocol extends Protocol {
       code: 0x05,
       response: 0x06,
       encode: ({ reqId, hashes }: GetBlockBodiesOpts) => [
-        bigIntToBuffer(reqId ?? ++this.nextReqId),
+        devP2PBigintToBuffer(reqId ?? ++this.nextReqId),
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
@@ -173,7 +182,7 @@ export class EthProtocol extends Protocol {
       name: 'BlockBodies',
       code: 0x06,
       encode: ({ reqId, bodies }: { reqId: bigint; bodies: BlockBodyBuffer[] }) => [
-        bigIntToBuffer(reqId),
+        devP2PBigintToBuffer(reqId),
         bodies,
       ],
       decode: ([reqId, bodies]: [Buffer, BlockBodyBuffer[]]) => [bufferToBigInt(reqId), bodies],
@@ -181,7 +190,7 @@ export class EthProtocol extends Protocol {
     {
       name: 'NewBlock',
       code: 0x07,
-      encode: ([block, td]: [Block, bigint]) => [block.raw(), bigIntToBuffer(td)],
+      encode: ([block, td]: [Block, bigint]) => [block.raw(), devP2PBigintToBuffer(td)],
       decode: ([block, td]: [BlockBuffer, Buffer]) => [
         Block.fromValuesArray(block, {
           common: this.config.chainCommon,
@@ -201,7 +210,7 @@ export class EthProtocol extends Protocol {
       code: 0x09,
       response: 0x0a,
       encode: ({ reqId, hashes }: GetPooledTransactionsOpts) => [
-        bigIntToBuffer(reqId ?? ++this.nextReqId),
+        devP2PBigintToBuffer(reqId ?? ++this.nextReqId),
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
@@ -221,7 +230,7 @@ export class EthProtocol extends Protocol {
             serializedTxs.push(tx.serialize())
           }
         }
-        return [bigIntToBuffer(reqId), serializedTxs]
+        return [devP2PBigintToBuffer(reqId), serializedTxs]
       },
       decode: ([reqId, txs]: [Buffer, any[]]) => [
         bufferToBigInt(reqId),
@@ -236,7 +245,7 @@ export class EthProtocol extends Protocol {
       code: 0x0f,
       response: 0x10,
       encode: ({ reqId, hashes }: { reqId: bigint; hashes: Buffer[] }) => [
-        bigIntToBuffer(reqId ?? ++this.nextReqId),
+        devP2PBigintToBuffer(reqId ?? ++this.nextReqId),
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
@@ -253,7 +262,7 @@ export class EthProtocol extends Protocol {
           const encodedReceipt = encodeReceipt(receipt, receipt.txType)
           serializedReceipts.push(encodedReceipt)
         }
-        return [bigIntToBuffer(reqId), serializedReceipts]
+        return [devP2PBigintToBuffer(reqId), serializedReceipts]
       },
       decode: ([reqId, receipts]: [Buffer, Buffer[]]) => [
         bufferToBigInt(reqId),
@@ -327,12 +336,14 @@ export class EthProtocol extends Protocol {
    */
   encodeStatus(): any {
     return {
-      networkId: bigIntToBuffer(this.chain.networkId),
+      networkId: devP2PBigintToBuffer(this.chain.networkId),
       td:
-        this.chain.blocks.td === BigInt(0) ? Buffer.from([]) : bigIntToBuffer(this.chain.blocks.td),
+        this.chain.blocks.td === BigInt(0)
+          ? Buffer.from([])
+          : devP2PBigintToBuffer(this.chain.blocks.td),
       bestHash: this.chain.blocks.latest!.hash(),
       genesisHash: this.chain.genesis.hash(),
-      latestBlock: bigIntToBuffer(this.chain.blocks.latest!.header.number),
+      latestBlock: devP2PBigintToBuffer(this.chain.blocks.latest!.header.number),
     }
   }
 
