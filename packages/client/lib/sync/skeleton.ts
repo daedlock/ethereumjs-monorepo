@@ -118,7 +118,8 @@ export class Skeleton extends MetaDBManager {
   private async checkLinked() {
     if (this.status.progress.subchains.length === 0) return false
     const { tail, next } = this.bounds()
-    // make check for genesis if tail is 1?
+    // if its genesis we are linked
+    if (tail === 0n) return true
     if (tail <= this.chain.blocks.height + BigInt(1)) {
       const nextBlock = await this.chain.getBlock(tail - BigInt(1))
       const linked = next.equals(nextBlock.hash())
